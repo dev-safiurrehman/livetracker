@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real-time Location Tracking</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+  <div id="map" style="height: 500px;"></div>
+  <!-- <script src="https://cdn.leafletjs.com/leaflet/v1.0.3/leaflet.js"></script>   -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Initialize the map
+    var map = L.map('map').setView([31.4675911, 74.317583], 13);
+  
+    // Load the tile layer from OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+    }).addTo(map);
+  
+    // Connect to the Socket.IO server
+    var socket = io();
+  
+    // Object to keep track of markers
+    var markers = {};
+  
+    // Listen for location updates from the server
+    socket.on('locationUpdate', function(data) {
+      var uid = data.uid;
+      var latLng = [data.location.latitude, data.location.longitude];
+  
+      if (markers[uid]) {
+        // Marker exists, update its position
+        markers[uid].setLatLng(latLng);
+      } else {
+        // Marker does not exist, create it and add to the map
+        markers[uid] = L.marker(latLng).addTo(map);
+        markers[uid].bindPopup(data.username);
+      }
+    });
+  </script>
+  
+</body>
+</html>
